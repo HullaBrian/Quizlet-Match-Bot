@@ -3,8 +3,6 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 import time
 
-# url = "https://quizlet.com/648625449/vocabulary-terms-flash-cards/"
-
 
 def get_terms(url):
     options = Options()
@@ -23,6 +21,8 @@ def get_terms(url):
 
     # TermText notranslate lang-en
     tmp = [element.text for element in soup.find_all("span", class_="TermText notranslate lang-en")]
+    for element in soup.find_all("span", class_="TermText notranslate lang-math"):
+        tmp.append(element.text)
 
     terms = {}
     for i in range(0, len(tmp) - 2, 2):

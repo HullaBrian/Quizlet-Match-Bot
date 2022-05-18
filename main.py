@@ -1,3 +1,4 @@
+from selenium.webdriver.support.wait import WebDriverWait
 from sh3ll import IS
 import selenium.common.exceptions
 from selenium import webdriver
@@ -5,6 +6,7 @@ from time import sleep
 from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver import ActionChains
+from selenium.webdriver.support import expected_conditions as EC
 import loader
 import pickle
 
@@ -57,7 +59,13 @@ def match(ctx):
 
     ctx.progress_bar.progress(2)  # PROGRESS
     print("\r", ctx.progress_bar, end="")
-    sleep(2.0)
+
+    timeout = 10
+    try:
+        WebDriverWait(driver, timeout).until(EC.presence_of_element_located((By.XPATH, "//span[contains(text(),'Start game')]")))
+    except selenium.TimeoutException:
+        print("Timed out waiting for page to load")
+
     driver.find_element(By.XPATH, "//span[contains(text(),'Start game')]").click()
 
     sleep(0.5)
@@ -73,15 +81,22 @@ def match(ctx):
             d = driver.find_element(By.XPATH, f"//div[text()=\"{definition}\"]")
 
             action_chains = ActionChains(driver)
-            action_chains.drag_and_drop(t, d).perform() # PROGRESS
+            action_chains.drag_and_drop(t, d).perform()  # PROGRESS
             ctx.progress_bar.progress(2)
             print("\b" * len(str(ctx.progress_bar)), end="")
         except selenium.common.exceptions.NoSuchElementException:
             pass
 
-    cont = input("Keep window open?")
-    driver.close()
-    print(ctx.progress_bar)
+    time = driver.find_element(By.CLASS_NAME, "MatchModeControls-currentTime").text
+    print("\r" + "\b" * len(str(ctx.progress_bar)), end="")
+    print("Finished in " + time + " seconds.")
+
+    sleep(1.0)
+    try:
+        print(ctx.progress_bar)
+        driver.close()
+    except selenium.common.exceptions.WebDriverException:
+        pass
 
 
 @app.command(name="login", help="Lets you log in and save, so you can save your match results")
