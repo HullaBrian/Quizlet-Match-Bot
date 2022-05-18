@@ -11,7 +11,7 @@ import loader
 url = ""
 options = Options()
 options.set_preference("javascript.enabled", False)  # Yoinks js from the site
-options.headless = True
+options.headless = False
 app = IS(name="Quizlet Bot", prefix="QBot>")
 
 
@@ -48,9 +48,6 @@ def match(ctx):
     print(ctx.progress_bar, end="")
 
     match_url = url[::-1][1:][url[::-1][1:].index("/"):][::-1] + "match/"
-
-    options = Options()
-    options.headless = True
 
     driver = webdriver.Firefox(options=options)
     driver.get(match_url)
