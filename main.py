@@ -6,13 +6,13 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver import ActionChains
 import loader
+import pickle
 
 
 url = ""
 options = Options()
-options.set_preference("javascript.enabled", False)  # Yoinks js from the site
 options.headless = False
-app = IS(name="Quizlet Bot", prefix="QBot>")
+app = IS(name="Quizlet-Bot", prefix="QBot>")
 
 
 @app.command(name="url", help="Sets the url for the bot", category="set")
@@ -51,9 +51,13 @@ def match(ctx):
 
     driver = webdriver.Firefox(options=options)
     driver.get(match_url)
+
+    for cookie in load_cookies():
+        driver.add_cookie(cookie)
+
     ctx.progress_bar.progress(2)  # PROGRESS
     print("\r", ctx.progress_bar, end="")
-    sleep(1.0)
+    sleep(2.0)
     driver.find_element(By.XPATH, "//span[contains(text(),'Start game')]").click()
 
     sleep(0.5)
@@ -75,9 +79,21 @@ def match(ctx):
         except selenium.common.exceptions.NoSuchElementException:
             pass
 
-    sleep(2.0)
+    cont = input("Keep window open?")
     driver.close()
     print(ctx.progress_bar)
 
+
+@app.command(name="login", help="Lets you log in and save, so you can save your match results")
+def login(ctx):
+    driver = selenium.webdriver.Firefox()
+    driver.get("https://quizlet.com")
+    cont = input("Enter any key once you have signed in: ")
+    pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+    driver.quit()
+
+
+def load_cookies():
+    return pickle.load(open("cookies.pkl", "rb"))
 
 app.run()
